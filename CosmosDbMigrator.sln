@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosDbMigrator.Web", "CosmosDbMigrator.Web\CosmosDbMigrator.Web\CosmosDbMigrator.Web.csproj", "{ED092004-FD86-4386-9CB4-AC896DB03337}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosDbMigrator.Web.Client", "CosmosDbMigrator.Web\CosmosDbMigrator.Web.Client\CosmosDbMigrator.Web.Client.csproj", "{7A03320F-2AE7-4608-A534-05F3168E9357}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosDbMigrator.AppHost", "CosmosDbMigrator.AppHost\CosmosDbMigrator.AppHost.csproj", "{6DB9FD00-A41A-42EB-AD1C-7DE2668F4260}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosDbMigrator.ServiceDefaults", "CosmosDbMigrator.ServiceDefaults\CosmosDbMigrator.ServiceDefaults.csproj", "{BAF13A1D-2A48-47E0-9D72-07FB9F41146C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{020080F2-8FEF-4BD6-AAE8-6E57DA2C695C}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		build.yml = build.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ED092004-FD86-4386-9CB4-AC896DB03337}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED092004-FD86-4386-9CB4-AC896DB03337}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED092004-FD86-4386-9CB4-AC896DB03337}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED092004-FD86-4386-9CB4-AC896DB03337}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A03320F-2AE7-4608-A534-05F3168E9357}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A03320F-2AE7-4608-A534-05F3168E9357}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A03320F-2AE7-4608-A534-05F3168E9357}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A03320F-2AE7-4608-A534-05F3168E9357}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DB9FD00-A41A-42EB-AD1C-7DE2668F4260}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DB9FD00-A41A-42EB-AD1C-7DE2668F4260}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DB9FD00-A41A-42EB-AD1C-7DE2668F4260}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DB9FD00-A41A-42EB-AD1C-7DE2668F4260}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAF13A1D-2A48-47E0-9D72-07FB9F41146C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAF13A1D-2A48-47E0-9D72-07FB9F41146C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAF13A1D-2A48-47E0-9D72-07FB9F41146C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAF13A1D-2A48-47E0-9D72-07FB9F41146C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

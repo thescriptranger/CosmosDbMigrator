@@ -1,0 +1,304 @@
+﻿@page "/containermigration"
+
+@inject CosmosDbService CosmosDbService
+
+<h3>Cosmos DB Container Migration Tool</h3>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+@if (!string.IsNullOrEmpty(SuccessMessage))
+{
+    <div class="alert alert-success">@SuccessMessage</div>
+}
+
+<h4>Enter Source Cosmos DB Connection Properties</h4>
+<div class="mb-3">
+    <label for="sourceEndpointUri" class="form-label">Source Endpoint URI:</label>
+    <input id="sourceEndpointUri" class="form-control" @bind="SourceEndpointUri" />
+</div>
+<div class="mb-3">
+    <label for="sourcePrimaryKey" class="form-label">Source Primary Key:</label>
+    <input id="sourcePrimaryKey" class="form-control" @bind="SourcePrimaryKey" type="password" />
+</div>
+<button class="btn btn-primary mb-4" @onclick="ConnectToSourceCosmosDb">Connect to Source Cosmos DB</button>
+
+@if (SourceIsConnected)
+{
+    <div class="mb-3">
+        <label for="sourceDatabaseSelect" class="form-label">Source Database:</label>
+        <select id="sourceDatabaseSelect" class="form-select" @bind="SelectedSourceDatabase">
+            <option value="">-- Select Database --</option>
+            @foreach (var db in SourceDatabases)
+            {
+                <option value="@db">@db</option>
+            }
+        </select>
+    </div>
+
+    @if (SourceContainers.Any())
+    {
+        <div class="mb-4">
+            <label for="sourceContainerSelect" class="form-label">Source Container:</label>
+            <select id="sourceContainerSelect" class="form-select" @bind="SelectedSourceContainer">
+                <option value="">-- Select Container --</option>
+                @foreach (var container in SourceContainers)
+                {
+                    <option value="@container">@container</option>
+                }
+            </select>
+        </div>
+    }
+}
+
+<h4>Enter Destination Cosmos DB Connection Properties</h4>
+<div class="mb-3">
+    <label for="destinationEndpointUri" class="form-label">Destination Endpoint URI:</label>
+    <input id="destinationEndpointUri" class="form-control" @bind="DestinationEndpointUri" />
+</div>
+<div class="mb-3">
+    <label for="destinationPrimaryKey" class="form-label">Destination Primary Key:</label>
+    <input id="destinationPrimaryKey" class="form-control" @bind="DestinationPrimaryKey" type="password" />
+</div>
+<button class="btn btn-primary mb-4" @onclick="ConnectToDestinationCosmosDb">Connect to Destination Cosmos DB</button>
+
+@if (DestinationIsConnected)
+{
+    <div class="mb-3">
+        <label for="destinationDatabaseSelect" class="form-label">Destination Database:</label>
+        <select id="destinationDatabaseSelect" class="form-select" @bind="SelectedDestinationDatabase">
+            <option value="">-- Select Database --</option>
+            @foreach (var db in DestinationDatabases)
+            {
+                <option value="@db">@db</option>
+            }
+        </select>
+    </div>
+
+    @if (DestinationContainers.Any())
+    {
+        <div class="mb-4">
+            <label for="destinationContainerSelect" class="form-label">Destination Container:</label>
+            <select id="destinationContainerSelect" class="form-select" @bind="SelectedDestinationContainer">
+                <option value="">-- Select Container --</option>
+                @foreach (var container in DestinationContainers)
+                {
+                    <option value="@container">@container</option>
+                }
+            </select>
+        </div>
+    }
+}
+
+<div class="mb-4">
+    <button class="btn btn-success" @onclick="MigrateContainer" disabled="@(string.IsNullOrEmpty(SelectedSourceContainer) || string.IsNullOrEmpty(SelectedDestinationContainer))">Migrate Container</button>
+</div>
+
+@if (IsMigrating)
+{
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" style="width: @MigrationProgress%" aria-valuenow="@MigrationProgress" aria-valuemin="0" aria-valuemax="100">@MigrationProgress%</div>
+    </div>
+}
+
+@code {
+    private string SourceEndpointUri { get; set; }
+    private string SourcePrimaryKey { get; set; }
+    private string SelectedSourceDatabase
+    {
+        get => selectedSourceDatabase;
+        set
+        {
+            if (selectedSourceDatabase != value)
+            {
+                selectedSourceDatabase = value;
+                _ = OnSourceDatabaseChange();
+            }
+        }
+    }
+    private string selectedSourceDatabase;
+    private string SelectedSourceContainer { get; set; }
+
+    private string DestinationEndpointUri { get; set; }
+    private string DestinationPrimaryKey { get; set; }
+    private string SelectedDestinationDatabase
+    {
+        get => selectedDestinationDatabase;
+        set
+        {
+            if (selectedDestinationDatabase != value)
+            {
+                selectedDestinationDatabase = value;
+                _ = OnDestinationDatabaseChange();
+            }
+        }
+    }
+    private string selectedDestinationDatabase;
+    private string SelectedDestinationContainer { get; set; }
+
+    private string ErrorMessage { get; set; }
+    private string SuccessMessage { get; set; }
+
+    private bool SourceIsConnected { get; set; } = false;
+    private bool DestinationIsConnected { get; set; } = false;
+    private bool IsMigrating { get; set; } = false;
+    private int MigrationProgress { get; set; } = 0;
+
+    private List<string> SourceDatabases = new List<string>();
+    private List<string> SourceContainers = new List<string>();
+    private List<string> DestinationDatabases = new List<string>();
+    private List<string> DestinationContainers = new List<string>();
+
+    private async Task ConnectToSourceCosmosDb()
+    {
+        ErrorMessage = null;
+        SourceIsConnected = false;
+
+        if (string.IsNullOrEmpty(SourceEndpointUri) || string.IsNullOrEmpty(SourcePrimaryKey))
+        {
+            ErrorMessage = "Please provide both Source Endpoint URI and Primary Key.";
+            return;
+        }
+
+        try
+        {
+            CosmosDbService.Initialize(SourceEndpointUri, SourcePrimaryKey);
+            SourceDatabases = await CosmosDbService.GetDatabasesAsync();
+            SourceIsConnected = true;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to connect to Source Cosmos DB: {ex.Message}";
+        }
+    }
+
+    private async Task ConnectToDestinationCosmosDb()
+    {
+        ErrorMessage = null;
+        DestinationIsConnected = false;
+
+        if (string.IsNullOrEmpty(DestinationEndpointUri) || string.IsNullOrEmpty(DestinationPrimaryKey))
+        {
+            ErrorMessage = "Please provide both Destination Endpoint URI and Primary Key.";
+            return;
+        }
+
+        try
+        {
+            CosmosDbService.Initialize(DestinationEndpointUri, DestinationPrimaryKey);
+            DestinationDatabases = await CosmosDbService.GetDatabasesAsync();
+            DestinationIsConnected = true;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to connect to Destination Cosmos DB: {ex.Message}";
+        }
+    }
+
+    private async Task OnSourceDatabaseChange()
+    {
+        SourceContainers.Clear();
+        SelectedSourceContainer = null;
+
+        if (string.IsNullOrEmpty(SelectedSourceDatabase))
+        {
+            return;
+        }
+
+        try
+        {
+            SourceContainers = await CosmosDbService.GetContainersAsync(SelectedSourceDatabase);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load source containers: {ex.Message}";
+        }
+    }
+
+    private async Task OnDestinationDatabaseChange()
+    {
+        DestinationContainers.Clear();
+        SelectedDestinationContainer = null;
+
+        if (string.IsNullOrEmpty(SelectedDestinationDatabase))
+        {
+            return;
+        }
+
+        try
+        {
+            DestinationContainers = await CosmosDbService.GetContainersAsync(SelectedDestinationDatabase);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load destination containers: {ex.Message}";
+        }
+    }
+
+    private async Task MigrateContainer()
+    {
+        ErrorMessage = null;
+        SuccessMessage = null;
+        IsMigrating = true;
+        MigrationProgress = 0;
+
+        if (string.IsNullOrEmpty(SourceEndpointUri) || string.IsNullOrEmpty(SourcePrimaryKey) ||
+            string.IsNullOrEmpty(SelectedSourceDatabase) || string.IsNullOrEmpty(SelectedSourceContainer) ||
+            string.IsNullOrEmpty(DestinationEndpointUri) || string.IsNullOrEmpty(DestinationPrimaryKey) ||
+            string.IsNullOrEmpty(SelectedDestinationDatabase) || string.IsNullOrEmpty(SelectedDestinationContainer))
+        {
+            ErrorMessage = "Please fill in all fields.";
+            IsMigrating = false;
+            return;
+        }
+
+        try
+        {
+            // Initialize source Cosmos DB connection
+            CosmosDbService.Initialize(SourceEndpointUri, SourcePrimaryKey);
+            var documents = await GetAllDocumentsAsync(SelectedSourceDatabase, SelectedSourceContainer);
+
+            // Re-initialize destination Cosmos DB connection
+            CosmosDbService.Initialize(DestinationEndpointUri, DestinationPrimaryKey);
+
+            int totalDocuments = documents.Count;
+            int processedDocuments = 0;
+
+            foreach (var document in documents)
+            {
+                await CosmosDbService.UploadDocumentsAsync(SelectedDestinationDatabase, SelectedDestinationContainer, new List<JObject> { document });
+                processedDocuments++;
+                MigrationProgress = (int)((double)processedDocuments / totalDocuments * 100);
+                StateHasChanged();
+            }
+
+            SuccessMessage = "Migration completed successfully.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Migration failed: {ex.Message}";
+        }
+        finally
+        {
+            IsMigrating = false;
+        }
+    }
+
+    private async Task<List<JObject>> GetAllDocumentsAsync(string databaseId, string containerId)
+    {
+        List<JObject> documents = new List<JObject>();
+
+        var container = new CosmosClient(SourceEndpointUri, SourcePrimaryKey).GetContainer(databaseId, containerId);
+        var query = "SELECT * FROM c";
+        var iterator = container.GetItemQueryIterator<JObject>(query);
+
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync();
+            documents.AddRange(response);
+        }
+
+        return documents;
+    }
+}

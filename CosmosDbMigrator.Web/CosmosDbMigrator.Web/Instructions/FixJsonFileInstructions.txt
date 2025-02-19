@@ -1,0 +1,8 @@
+﻿Open the JSON file you saved from SQL Server in Notepad++
+
+Do a find/replace and select Regular Expression in the search mode.
+
+Find: (?<=[^,\[\]\{\}])\r?\n\s*
+Select "Replace All"
+
+Save the JSON file.
